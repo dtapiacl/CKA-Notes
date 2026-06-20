@@ -1,0 +1,38 @@
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mc-pod-1
+  namespace: mc-namespace
+spec:
+  volumes:
+  - name: shared-volume
+    emptyDir: {}
+  containers:
+  - name: mc-pod-1
+    image: nginx:1-alpine
+    env:
+      - name: NODE_NAME
+        valueFrom:
+          fieldRef:
+            fieldPath: spec.nodeName
+  
+  - name: mc-pod-2
+    image: busybox:1
+    command:
+    - "sh"
+    - "-c"
+    - "while true; do date >>  /var/log/shared/date.log; sleep 1; done" #Here you would provide the command that you want to run on the container. 
+    volumeMounts:
+    - mountPath: /var/log/shared
+      name: shared-volume
+  
+  - name: mc-pod-3
+    image: busybox:1
+    command:
+    - "sh"
+    - "-c"
+    - "tail -f /var/log/shared/date.log"
+    volumeMounts:
+    - mountPath: /var/log/shared
+      name: shared-volume
